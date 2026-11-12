@@ -15,5 +15,14 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const summary = readFileSync(join(here, 'summary.txt'), 'utf8');
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+// The gate takes UTF-8 text of 1 to 2,000 characters that is not only white
+// space: refuse to write anything outside it, instead of silently entering
+// an invalid file.
+const length = [...summary].length;
+if (length < 1 || length > 2000 || !/[^\s]/.test(summary)) {
+  throw new Error(`summary is ${length} characters, outside the 1-2000 gate`);
+}
+
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'entry.txt'), summary, 'utf8');
